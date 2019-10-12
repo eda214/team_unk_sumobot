@@ -1,7 +1,7 @@
-const int led1 = 19;
-const int led2 = 17;
-const int button1 = 24;
-const int button2 = 19;
+const int led1 = 10;
+const int led2 = 9;
+const int button1 = 14;
+const int button2 = 15;
 
 int cur_state;
 
@@ -9,7 +9,9 @@ void setup() {
   
   pinMode(led1, OUTPUT);
   pinMode(led2, OUTPUT);
-  cur_state = 0;
+  pinMode(button1, INPUT);
+  pinMode(button2, INPUT);
+  cur_state = 1;
 }
 
 void loop() {
@@ -17,34 +19,40 @@ void loop() {
     case 0:
       digitalWrite(led1, LOW);
       digitalWrite(led2, LOW);
+      break;
     case 1:
       digitalWrite(led1, LOW);
       digitalWrite(led2, HIGH);
+      break;
     case 2:
       digitalWrite(led1, HIGH);
       digitalWrite(led2, LOW);
+      break;
     case 3:
       digitalWrite(led1, HIGH);
       digitalWrite(led2, HIGH);
+      break;
   }
   incr();
   decr();
-  delay(500);
+
   
 }
 
 void incr() {
-  if (digitalRead(button2)) {
+  if (digitalRead(button2) == 1) {
     if (cur_state < 3) {
       cur_state += 1;
+      delay(500);
     }
   }
 }
 
 void decr() {
-  if (digitalRead(button1)) {
+  if (digitalRead(button1) == 1) {
     if (cur_state > 0) {
       cur_state -= 1;
+      delay(500);
     }
   }
 }
