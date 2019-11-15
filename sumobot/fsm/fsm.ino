@@ -9,10 +9,10 @@ FsmState cur_state;
 
 void setup() {
     // Fix these pins
-    pinMode(pins::motorA1, OUTPUT);
-    pinMode(pins::motorA2, OUTPUT);
-    pinMode(pins::motorB1, OUTPUT);
-    pinMode(pins::motorB2, OUTPUT);
+    pinMode(pins::motorR1, OUTPUT);
+    pinMode(pins::motorR2, OUTPUT);
+    pinMode(pins::motorL1, OUTPUT);
+    pinMode(pins::motorL2, OUTPUT);
     
     pinMode(pins::ref1, INPUT);
     pinMode(pins::ref2, INPUT);
@@ -35,27 +35,43 @@ void loop() {
     // Read the two buttons and keep track of their state for this cycle
     switch (cur_state) {
         case Stopped:
-            digitalWrite(pins::motorA1, HIGH);
-            digitalWrite(pins::motorA2, HIGH);
-            digitalWrite(pins::motorB1, HIGH);
-            digitalWrite(pins::motorB2, HIGH);
+            digitalWrite(pins::motorR1, HIGH);
+            digitalWrite(pins::motorR2, HIGH);
+            digitalWrite(pins::motorL1, HIGH);
+            digitalWrite(pins::motorL2, HIGH);
             // If edge detected in front 
             // Reverse?
             // Else if opponent detected in front
             // Forward
             break;
         case Fwd:
-            digitalWrite(pins::motorA1, HIGH);
-            digitalWrite(pins::motorA2, LOW);
-            digitalWrite(pins::motorB1, HIGH);
-            digitalWrite(pins::motorB2, LOW);
+            digitalWrite(pins::motorR1, HIGH);
+            digitalWrite(pins::motorR2, LOW);
+            digitalWrite(pins::motorL1, HIGH);
+            digitalWrite(pins::motorL2, LOW);
             // Switching Logic
+            break;
         case Rev:
-            digitalWrite(pins::motorA1, LOW);
-            digitalWrite(pins::motorA2, HIGH);
-            digitalWrite(pins::motorB1, LOW);
-            digitalWrite(pins::motorB2, HIGH);
+            digitalWrite(pins::motorR1, LOW);
+            digitalWrite(pins::motorR2, HIGH);
+            digitalWrite(pins::motorL1, LOW);
+            digitalWrite(pins::motorL2, HIGH);
             // Switching Logic
+            break;
+        case Left:
+            digitalWrite(pins::motorR1, HIGH);
+            digitalWrite(pins::motorR2, LOW);
+            digitalWrite(pins::motorL1, LOW);
+            digitalWrite(pins::motorL2, HIGH);
+            // Switching Logic
+            break;
+        case Right:
+            digitalWrite(pins::motorR1, LOW);
+            digitalWrite(pins::motorR2, HIGH);
+            digitalWrite(pins::motorL1, HIGH);
+            digitalWrite(pins::motorL2, LOW);
+            // Switching Logic
+            break;
     }
     delay(200);
 }
