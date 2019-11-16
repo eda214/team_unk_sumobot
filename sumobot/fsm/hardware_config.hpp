@@ -13,4 +13,14 @@ namespace pins {
     const uint8_t motorL1 = 15;
     const uint8_t motorL2 = 14;
     const uint8_t motorLPWM = 16;
+
+    // reflectance sensor pins
+    const uint8_t refFront = 22;
+    const uint8_t refRear = 23;
+
+    // tof sensor pins
+    const uint8_t scl = 19;
+    const uint8_t sda = 18;
+    const uint8_t xshut1 = 2; // Better names for these?
+    const uint8_t xshut2 = 3;
 }   // namespace pins

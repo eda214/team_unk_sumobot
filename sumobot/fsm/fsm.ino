@@ -4,20 +4,26 @@
 // If 1, prints debug information to the Arduino Serial Monitor, if 0, doesn't
 #define DEBUG_ENABLED 1
 
+// Threshold for whether refl sensor detects a line (just made up a number for now)
+#define REF_THRESHOLD 500
+
 enum FsmState {Stopped, Fwd, Rev, Left, Right};
 FsmState cur_state;
+bool edgeInFront();
+bool edgeInRear();
+bool opntInFront();
 
 void setup() {
-    // Fix these pins
+    // Change pin numbers in hardware_config.hpp
     pinMode(pins::motorR1, OUTPUT);
     pinMode(pins::motorR2, OUTPUT);
     pinMode(pins::motorL1, OUTPUT);
     pinMode(pins::motorL2, OUTPUT);
     
-    pinMode(pins::ref1, INPUT);
-    pinMode(pins::ref2, INPUT);
+    pinMode(pins::refFront, INPUT);
+    pinMode(pins::refRear, INPUT);
 
-    // Counter starts at 0
+    // Starting at stopped
     cur_state = Stopped;
 
     #if DEBUG_ENABLED
@@ -43,6 +49,13 @@ void loop() {
             // Reverse?
             // Else if opponent detected in front
             // Forward
+            if(edgeInFront()) {
+              cur_state = Rev;
+            }
+            else if (opntInFront()) {
+              cur_state = Fwd;
+            }
+            // What else?
             break;
         case Fwd:
             digitalWrite(pins::motorR1, HIGH);
@@ -50,6 +63,7 @@ void loop() {
             digitalWrite(pins::motorL1, HIGH);
             digitalWrite(pins::motorL2, LOW);
             // Switching Logic
+            if (edgeInFront())
             break;
         case Rev:
             digitalWrite(pins::motorR1, LOW);
@@ -64,6 +78,7 @@ void loop() {
             digitalWrite(pins::motorL1, LOW);
             digitalWrite(pins::motorL2, HIGH);
             // Switching Logic
+            //
             break;
         case Right:
             digitalWrite(pins::motorR1, LOW);
@@ -74,4 +89,17 @@ void loop() {
             break;
     }
     delay(200);
+}
+
+bool edgeInFront() {
+  return (analogRead(pins::refFront) < REF_THRESHOLD);
+}
+
+bool edgeInRear() {
+  return (analogRead(pins::refRear) < REF_THRESHOLD);
+}
+
+// Should return true if opponent detected in front, false otherwise
+bool opntInFront() {
+  return false;
 }
