@@ -63,7 +63,9 @@ void loop() {
             digitalWrite(pins::motorL1, HIGH);
             digitalWrite(pins::motorL2, LOW);
             // Switching Logic
-            if (edgeInFront())
+            if (edgeInFront()) {
+              cur_state = Rev;
+            }
             break;
         case Rev:
             digitalWrite(pins::motorR1, LOW);
