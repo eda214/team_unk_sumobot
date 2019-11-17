@@ -9,6 +9,8 @@
 
 enum FsmState {Stopped, Fwd, Rev, Left, Right};
 FsmState cur_state;
+
+// Reflectance sensor functions
 bool edgeInFront();
 bool edgeInRear();
 bool opntInFront();
@@ -19,12 +21,42 @@ void setup() {
     pinMode(pins::motorR2, OUTPUT);
     pinMode(pins::motorL1, OUTPUT);
     pinMode(pins::motorL2, OUTPUT);
-    
-    pinMode(pins::refFront, INPUT);
-    pinMode(pins::refRear, INPUT);
+
+    // Need to check if we actually need these
+    pinMode(pins::refFL, INPUT);
+    pinMode(pins::refFR, INPUT);
+    pinMode(pins::refRL, INPUT);
+    pinMode(pins::refRR, INPUT);
 
     // Starting at stopped
     cur_state = Stopped;
+
+    // Is this the correct place for this?
+    sensors_ = {new VL53L0X, new VL53L0X, new VL53L0X};
+    sensor_names_ = {“left”, “front”, right”};
+    sensor_pins_= {XSHUT1, XSHUT2, XSHUT3};
+    for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+           pinMode(sensor_pins_[i], OUTPUT);
+           digitalWrite(sensor_pins_[i], LOW);
+       }
+    
+       delay(50);
+       Wire.begin();
+    
+       // Set sensor addresses
+       for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+           digitalWrite(sensor_pins_[i], HIGH);
+           delay(50);
+           sensors_[i]->setAddress(2 * i);
+           // Uncomment to debug addresses of sensors
+           // Serial.println(sensors[i]->readReg(0x212));
+       }
+       delay(50);
+    
+       // Initializes sensors
+       for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+           initSensor_(i);
+     }
 
     #if DEBUG_ENABLED
         Serial.begin(9600);
@@ -49,12 +81,12 @@ void loop() {
             // Reverse?
             // Else if opponent detected in front
             // Forward
-            if(edgeInFront()) {
-              cur_state = Rev;
-            }
-            else if (opntInFront()) {
-              cur_state = Fwd;
-            }
+            //if(edgeInFront()) {
+            //  cur_state = Rev;
+            //}
+            //else if (opntInFront()) {
+            //  cur_state = Fwd;
+            //}
             // What else?
             break;
         case Fwd:
@@ -63,9 +95,9 @@ void loop() {
             digitalWrite(pins::motorL1, HIGH);
             digitalWrite(pins::motorL2, LOW);
             // Switching Logic
-            if (edgeInFront()) {
-              cur_state = Rev;
-            }
+            //if (edgeInFront()) {
+            //  cur_state = Rev;
+            //}
             break;
         case Rev:
             digitalWrite(pins::motorR1, LOW);
@@ -93,15 +125,75 @@ void loop() {
     delay(200);
 }
 
-bool edgeInFront() {
-  return (analogRead(pins::refFront) < REF_THRESHOLD);
+void rightMotorFwd() {
+  return;
 }
 
-bool edgeInRear() {
-  return (analogRead(pins::refRear) < REF_THRESHOLD);
+
+
+bool edgeFL() {
+  return (analogRead(pins::refFL) < REF_THRESHOLD);
+}
+
+bool edgeFR() {
+  return (analogRead(pins::refFR) < REF_THRESHOLD);
+}
+
+bool edgeRL() {
+  return (analogRead(pins::refRL) < REF_THRESHOLD);
+}
+
+bool edgeRR() {
+  return (analogRead(pins::refRR) < REF_THRESHOLD);
 }
 
 // Should return true if opponent detected in front, false otherwise
 bool opntInFront() {
   return false;
 }
+
+initSensor_(uint8_t index) {
+   VL53L0X* sensor = sensors_[index];
+   sensor->init();
+   sensor->setTimeout(500);
+   Serial.print(sensor_names_[index]);
+   Serial.println(” online.“);
+   delay(200);
+}
+
+/*
+ * sensors_ = {new VL53L0X, new VL53L0X, new VL53L0X};
+sensor_names_ = {“left”, “front”, right”};
+sensor_pins_= {XSHUT1, XSHUT2, XSHUT3};
+for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+       pinMode(sensor_pins_[i], OUTPUT);
+       digitalWrite(sensor_pins_[i], LOW);
+   }
+
+   delay(50);
+   Wire.begin();
+
+   // Set sensor addresses
+   for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+       digitalWrite(sensor_pins_[i], HIGH);
+       delay(50);
+       sensors_[i]->setAddress(2 * i);
+       // Uncomment to debug addresses of sensors
+       // Serial.println(sensors[i]->readReg(0x212));
+   }
+   delay(50);
+
+   // Initializes sensors
+   for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+       initSensor_(i);
+ }
+
+initSensor_(uint8_t index) {
+   VL53L0X* sensor = sensors_[index];
+   sensor->init();
+   sensor->setTimeout(500);
+   Serial.print(sensor_names_[index]);
+   Serial.println(” online.“);
+   delay(200);
+}
+ */

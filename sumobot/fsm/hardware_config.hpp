@@ -15,8 +15,11 @@ namespace pins {
     const uint8_t motorLPWM = 16;
 
     // reflectance sensor pins
-    const uint8_t refFront = 22;
-    const uint8_t refRear = 23;
+    // Front left, front right, rear left, rear right
+    const uint8_t refFL = 22;
+    const uint8_t refFR = 23;
+    const uint8_t refRL = 24; //placeholder number
+    const uint8_t refRR = 25; //^^^
 
     // tof sensor pins
     const uint8_t scl = 19;
