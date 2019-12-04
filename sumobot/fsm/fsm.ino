@@ -1,6 +1,11 @@
-// Warning: This code currently does not compile
 #include "hardware_config.hpp"
 #include <stdint.h>
+
+#include <VL53L0X.h>
+
+#include <Wire.h>
+#include <WireIMXRT.h>
+#include <WireKinetis.h>
 
 // If 1, prints debug information to the Arduino Serial Monitor, if 0, doesn't
 #define DEBUG_ENABLED 1
@@ -12,11 +17,13 @@ enum FsmState {Stopped, Fwd, Rev, Left, Right};
 FsmState cur_state;
 
 void init_sensor_(uint8_t index);
-VL53L0X sensors_[];
-char sensor_names_[][];
-int sensor_pins_[];
 
-// Reflectance sensor functions
+const int num_tof_sensors = 2;
+VL53L0X* sensors_[num_tof_sensors] = {new VL53L0X, new VL53L0X};;
+String sensor_names_[num_tof_sensors] = {"left", "right"};
+int sensor_pins_[num_tof_sensors] = {pins::XSHUT1, pins::XSHUT2};
+
+// Reflectance sensor readings
 bool edgeFL();
 bool edgeFR();
 bool edgeRL();
@@ -40,11 +47,7 @@ void setup() {
     // Starting at stopped
     cur_state = Stopped;
 
-    // Is this the correct place for this?
-    sensors_ = {new VL53L0X, new VL53L0X};
-    sensor_names_ = {"left", "right"};
-    sensor_pins_= {pins::XSHUT1, pins::XSHUT2};
-    for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+     for (uint8_t i = 0; i < num_tof_sensors; i++) {
          pinMode(sensor_pins_[i], OUTPUT);
          digitalWrite(sensor_pins_[i], LOW);
      }
@@ -53,7 +56,7 @@ void setup() {
      Wire.begin();
   
      // Set sensor addresses
-     for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+     for (uint8_t i = 0; i < num_tof_sensors; i++) {
          digitalWrite(sensor_pins_[i], HIGH);
          delay(50);
          sensors_[i]->setAddress(2 * i);
@@ -63,7 +66,7 @@ void setup() {
      delay(50);
   
      // Initializes sensors
-     for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+     for (uint8_t i = 0; i < num_tof_sensors; i++) {
          initSensor_(i);
      }
 
