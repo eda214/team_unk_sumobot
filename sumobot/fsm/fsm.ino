@@ -10,13 +10,17 @@
 // If 1, prints debug information to the Arduino Serial Monitor, if 0, doesn't
 #define DEBUG_ENABLED 1
 
+// Constants
 // Threshold for whether refl sensor detects a line (placeholder number for now)
 #define REF_THRESHOLD 0
 // Threshold for TOF (also placeholder)
 #define TOF_THRESHOLD 100
+// PWM values for motors
+#define HIGH_PWM 255
+#define LOW_PWM 127
 
 // States
-enum FsmState {Stopped, Fwd, Rev, Left, Right};
+enum FsmState {Stopped, Fwd, Rev, FwdHigh, RevHigh, Left, Right};
 FsmState cur_state;
 
 // I^2C stuff
@@ -136,8 +140,10 @@ void loop() {
         case Fwd:
             digitalWrite(pins::motorR1, HIGH);
             digitalWrite(pins::motorR2, LOW);
+            analogWrite(pins::motorRPWM, LOW_PWM);
             digitalWrite(pins::motorL1, HIGH);
             digitalWrite(pins::motorL2, LOW);
+            analogWrite(pins::motorLPWM, LOW_PWM);
             //PWM???
             // Switching Logic
             // If driving parallel to edge, turn away from it
@@ -154,23 +160,47 @@ void loop() {
         case Rev:
             digitalWrite(pins::motorR1, LOW);
             digitalWrite(pins::motorR2, HIGH);
+            analogWrite(pins::motorRPWM, LOW_PWM);
             digitalWrite(pins::motorL1, LOW);
             digitalWrite(pins::motorL2, HIGH);
+            analogWrite(pins::motorLPWM, LOW_PWM);
+            // Switching Logic
+            break;
+        case FwdHigh:
+            digitalWrite(pins::motorR1, HIGH);
+            digitalWrite(pins::motorR2, LOW);
+            analogWrite(pins::motorRPWM, HIGH_PWM);
+            digitalWrite(pins::motorL1, HIGH);
+            digitalWrite(pins::motorL2, LOW);
+            analogWrite(pins::motorLPWM, HIGH_PWM);
+            // Switching Logic
+            break;
+        case RevHigh:
+            digitalWrite(pins::motorR1, LOW);
+            digitalWrite(pins::motorR2, HIGH);
+            analogWrite(pins::motorRPWM, HIGH_PWM);
+            digitalWrite(pins::motorL1, LOW);
+            digitalWrite(pins::motorL2, HIGH);
+            analogWrite(pins::motorLPWM, HIGH_PWM);
             // Switching Logic
             break;
         case Left:
             digitalWrite(pins::motorR1, HIGH);
             digitalWrite(pins::motorR2, LOW);
+            analogWrite(pins::motorRPWM, LOW_PWM);
             digitalWrite(pins::motorL1, LOW);
             digitalWrite(pins::motorL2, HIGH);
+            analogWrite(pins::motorLPWM, LOW_PWM);
             // Switching Logic
             //
             break;
         case Right:
             digitalWrite(pins::motorR1, LOW);
             digitalWrite(pins::motorR2, HIGH);
+            analogWrite(pins::motorRPWM, LOW_PWM);
             digitalWrite(pins::motorL1, HIGH);
             digitalWrite(pins::motorL2, LOW);
+            analogWrite(pins::motorLPWM, LOW_PWM);
             // Switching Logic
             break;
     }
