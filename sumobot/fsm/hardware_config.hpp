@@ -24,6 +24,6 @@ namespace pins {
     // tof sensor pins
     const uint8_t scl = 19;
     const uint8_t sda = 18;
-    const uint8_t xshut1 = 2; // Better names for these?
-    const uint8_t xshut2 = 3;
+    const uint8_t XSHUT1 = 2; // Better names for these?
+    const uint8_t XSHUT2 = 3;
 }   // namespace pins

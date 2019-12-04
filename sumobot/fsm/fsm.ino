@@ -1,18 +1,27 @@
+// Warning: This code currently does not compile
 #include "hardware_config.hpp"
 #include <stdint.h>
 
 // If 1, prints debug information to the Arduino Serial Monitor, if 0, doesn't
 #define DEBUG_ENABLED 1
 
-// Threshold for whether refl sensor detects a line (just made up a number for now)
-#define REF_THRESHOLD 500
+// Threshold for whether refl sensor detects a line (placeholder number for now)
+#define REF_THRESHOLD 0
 
 enum FsmState {Stopped, Fwd, Rev, Left, Right};
 FsmState cur_state;
 
+void init_sensor_(uint8_t index);
+VL53L0X sensors_[];
+char sensor_names_[][];
+int sensor_pins_[];
+
 // Reflectance sensor functions
-bool edgeInFront();
-bool edgeInRear();
+bool edgeFL();
+bool edgeFR();
+bool edgeRL();
+bool edgeRR();
+
 bool opntInFront();
 
 void setup() {
@@ -32,30 +41,30 @@ void setup() {
     cur_state = Stopped;
 
     // Is this the correct place for this?
-    sensors_ = {new VL53L0X, new VL53L0X, new VL53L0X};
-    sensor_names_ = {“left”, “front”, right”};
-    sensor_pins_= {XSHUT1, XSHUT2, XSHUT3};
+    sensors_ = {new VL53L0X, new VL53L0X};
+    sensor_names_ = {"left", "right"};
+    sensor_pins_= {pins::XSHUT1, pins::XSHUT2};
     for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
-           pinMode(sensor_pins_[i], OUTPUT);
-           digitalWrite(sensor_pins_[i], LOW);
-       }
-    
-       delay(50);
-       Wire.begin();
-    
-       // Set sensor addresses
-       for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
-           digitalWrite(sensor_pins_[i], HIGH);
-           delay(50);
-           sensors_[i]->setAddress(2 * i);
-           // Uncomment to debug addresses of sensors
-           // Serial.println(sensors[i]->readReg(0x212));
-       }
-       delay(50);
-    
-       // Initializes sensors
-       for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
-           initSensor_(i);
+         pinMode(sensor_pins_[i], OUTPUT);
+         digitalWrite(sensor_pins_[i], LOW);
+     }
+  
+     delay(50);
+     Wire.begin();
+  
+     // Set sensor addresses
+     for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+         digitalWrite(sensor_pins_[i], HIGH);
+         delay(50);
+         sensors_[i]->setAddress(2 * i);
+         // Uncomment to debug addresses of sensors
+         // Serial.println(sensors[i]->readReg(0x212));
+     }
+     delay(50);
+  
+     // Initializes sensors
+     for (uint8_t i = 0; i < sensor_pins_.size(); i++) {
+         initSensor_(i);
      }
 
     #if DEBUG_ENABLED
@@ -125,11 +134,6 @@ void loop() {
     delay(200);
 }
 
-void rightMotorFwd() {
-  return;
-}
-
-
 
 bool edgeFL() {
   return (analogRead(pins::refFL) < REF_THRESHOLD);
@@ -152,12 +156,12 @@ bool opntInFront() {
   return false;
 }
 
-initSensor_(uint8_t index) {
+void initSensor_(uint8_t index) {
    VL53L0X* sensor = sensors_[index];
    sensor->init();
    sensor->setTimeout(500);
    Serial.print(sensor_names_[index]);
-   Serial.println(” online.“);
+   Serial.println(" online.");
    delay(200);
 }
 
