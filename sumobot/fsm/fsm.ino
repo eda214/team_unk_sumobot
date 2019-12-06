@@ -104,6 +104,10 @@ void loop() {
         Serial.println(analogRead(pins::refRL));
         Serial.print("IR Rear Right: ");
         Serial.println(analogRead(pins::refRR));
+        Serial.print("TOF Front: ");
+        Serial.println(getTOF(0));
+        Serial.print("TOF Rear: ");
+        Serial.println(getTOF(1));
     #endif
 
     // Read the two buttons and keep track of their state for this cycle
