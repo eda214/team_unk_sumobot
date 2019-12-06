@@ -60,19 +60,20 @@ void setup() {
     // We'll turn left if nothing else to do at first
     search_dir = Left;
 
-    for (uint8_t i = 0; i < num_tof_sensors; i++) {
-        pinMode(sensor_pins_[i], OUTPUT);
-        digitalWrite(sensor_pins_[i], LOW);
-    }
+    pinMode(sensor_pins_[0], OUTPUT);
+    pinMode(sensor_pins_[1], OUTPUT);
+    digitalWrite(sensor_pins_[0], HIGH);
+    digitalWrite(sensor_pins_[1], LOW);
+    
   
-    delay(50);
     Wire.begin();
   
     // Set sensor addresses
     for (uint8_t i = 0; i < num_tof_sensors; i++) {
-        digitalWrite(sensor_pins_[i], HIGH);
         delay(50);
         sensors_[i]->setAddress(2 * i);
+        delay(50);
+        digitalWrite(sensor_pins_[i], HIGH);
         // Uncomment to debug addresses of sensors
         // Serial.println(sensors[i]->readReg(0x212));
     }
@@ -186,6 +187,9 @@ void loop() {
             else if (edgeFL() || edgeFR()) {
               cur_state = Stopped;
             }
+            else {
+              cur_state = search_dir;
+            }
             break;
         case Rev:
             digitalWrite(pins::motorR1, LOW);
@@ -214,6 +218,9 @@ void loop() {
             // Fix this case
             else if (edgeRL() || edgeRR()) {
               cur_state = Stopped;
+            }
+            else {
+              cur_state = search_dir;
             }
             break;
         case FwdHigh:
