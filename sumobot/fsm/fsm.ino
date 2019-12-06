@@ -96,6 +96,14 @@ void loop() {
     #if DEBUG_ENABLED
         Serial.print("State: ");
         Serial.println(cur_state);
+        Serial.print("IR Front Left: ");
+        Serial.println(analogRead(pins::refFL));
+        Serial.print("IR Front Right: ");
+        Serial.println(analogRead(pins::refFR));
+        Serial.print("IR Rear Left: ");
+        Serial.println(analogRead(pins::refRL));
+        Serial.print("IR Rear Right: ");
+        Serial.println(analogRead(pins::refRR));
     #endif
 
     // Read the two buttons and keep track of their state for this cycle
@@ -284,7 +292,7 @@ bool edgeRR() {
 
 // Should return true if something detected, false otherwise
 uint16_t getTOF(int i) {
-  return (*sensors_[i]).readRangeSingleMillimeters();
+  return sensors_[i]->readRangeContinuousMillimeters();
 }
 
 bool tofFront() {
@@ -307,6 +315,7 @@ void initSensor_(uint8_t index) {
    VL53L0X* sensor = sensors_[index];
    sensor->init();
    sensor->setTimeout(500);
+   sensor->startContinuous();
    Serial.print(sensor_names_[index]);
    Serial.println(" online.");
    delay(200);
