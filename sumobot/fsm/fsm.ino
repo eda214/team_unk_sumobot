@@ -22,6 +22,7 @@
 // States
 enum FsmState {Stopped, Fwd, Rev, FwdHigh, RevHigh, Left, Right};
 FsmState cur_state;
+FsmState turn_dir; //Tells which way to turn if nothing else to do
 
 // I^2C stuff
 void init_sensor_(uint8_t index);
@@ -55,6 +56,9 @@ void setup() {
 
     // Starting at stopped
     cur_state = Stopped;
+
+    // We'll turn left if nothing else to do at first
+    turn_dir = Left;
 
     for (uint8_t i = 0; i < num_tof_sensors; i++) {
         pinMode(sensor_pins_[i], OUTPUT);
@@ -101,8 +105,12 @@ void loop() {
             digitalWrite(pins::motorR2, HIGH);
             digitalWrite(pins::motorL1, HIGH);
             digitalWrite(pins::motorL2, HIGH);
+            // Opponent in front
+            if (tofLeft() && tofRight()) {
+              cur_state = FwdHigh;
+            }
             // Edge in front -> reverse 
-            if(edgeFL() && edgeFR()) {
+            else if(edgeFL() && edgeFR()) {
               cur_state = Rev;
             }
             // Edge behind -> forward
@@ -111,31 +119,39 @@ void loop() {
             }
             // Edge on left -> turn right
             else if (edgeFL() && edgeRL()) {
+              turn_dir = Right;
               cur_state = Right;
             }
             // Edge on right -> turn left
             else if (edgeFR() && edgeRR()) {
+              turn_dir = Left;
               cur_state = Left;
             }
             // Edge in front corner -> turn away from edge
             // NEED BETTER RESPONSE HERE
             // Possibly more specific kinds of turns?
             else if (edgeFL()) {
+              turn_dir = Right;
               cur_state = Right;
             }
             else if (edgeFR()) {
+              turn_dir = Left;
               cur_state = Left;
             }
             // Edge in rear corner -> turn away from edge
             // Probably fine in most cases, but test
             else if (edgeRL()) {
+              turn_dir = Right;
               cur_state = Right;
             }
             else if (edgeRR()) {
+              turn_dir = Left;
               cur_state = Left;
             }
+            else {
+              cur_state = turn_dir;
+            }
             // What else?
-            // Opponent in front cases
             break;
         case Fwd:
             digitalWrite(pins::motorR1, HIGH);
@@ -144,18 +160,20 @@ void loop() {
             digitalWrite(pins::motorL1, HIGH);
             digitalWrite(pins::motorL2, LOW);
             analogWrite(pins::motorLPWM, LOW_PWM);
-            //PWM???
             // Switching Logic
+            if (opntInFront()) {
+              cur_state = FwdHigh;
+            }
             // If driving parallel to edge, turn away from it
-            if (edgeFL() && edgeRL()) {
+            else if (edgeFL() && edgeRL()) {
               cur_state = Right;
             }
             else if (edgeFR() && edgeRR()) {
               cur_state = Left;
             }
-            //if (edgeFL() || edgeFR()) {
-            //  cur_state = Stopped;
-            //}
+            else if (edgeFL() || edgeFR()) {
+              cur_state = Stopped;
+            }
             break;
         case Rev:
             digitalWrite(pins::motorR1, LOW);
@@ -165,6 +183,26 @@ void loop() {
             digitalWrite(pins::motorL2, HIGH);
             analogWrite(pins::motorLPWM, LOW_PWM);
             // Switching Logic
+            if (opntInFront()) {
+              cur_state = FwdHigh;
+            }
+            // If reversing and edge is detected in front, reverse harder
+            else if (edgeFL() && edgeFR()) {
+              cur_state = RevHigh;
+            }
+            // If driving parallel to edge, turn away from it
+            else if (edgeFL() && edgeRL()) {
+              turn_dir = Right;
+              cur_state = Right;
+            }
+            else if (edgeFR() && edgeRR()) {
+              turn_dir = Left;
+              cur_state = Left;
+            }
+            // Fix this case
+            else if (edgeRL() || edgeRR()) {
+              cur_state = Stopped;
+            }
             break;
         case FwdHigh:
             digitalWrite(pins::motorR1, HIGH);
@@ -174,6 +212,9 @@ void loop() {
             digitalWrite(pins::motorL2, LOW);
             analogWrite(pins::motorLPWM, HIGH_PWM);
             // Switching Logic
+            if (!opntInFront()) {
+              cur_state = Fwd;
+            }
             break;
         case RevHigh:
             digitalWrite(pins::motorR1, LOW);
@@ -183,6 +224,10 @@ void loop() {
             digitalWrite(pins::motorL2, HIGH);
             analogWrite(pins::motorLPWM, HIGH_PWM);
             // Switching Logic
+            // Is this criterion for switching out too strict?
+            if (!edgeFL() && !edgeRL()) {
+              cur_state = Rev;
+            }
             break;
         case Left:
             digitalWrite(pins::motorR1, HIGH);
@@ -192,7 +237,13 @@ void loop() {
             digitalWrite(pins::motorL2, HIGH);
             analogWrite(pins::motorLPWM, LOW_PWM);
             // Switching Logic
-            //
+            if (opntInFront()) {
+              cur_state = FwdHigh;
+            }
+            else if (edgeFL() || edgeRL()) {
+              turn_dir = Right;
+              cur_state = Stopped;
+            }
             break;
         case Right:
             digitalWrite(pins::motorR1, LOW);
@@ -202,6 +253,13 @@ void loop() {
             digitalWrite(pins::motorL2, LOW);
             analogWrite(pins::motorLPWM, LOW_PWM);
             // Switching Logic
+            if (opntInFront()) {
+              cur_state = FwdHigh;
+            }
+            else if (edgeFR() || edgeRR()) {
+              turn_dir = Left;
+              cur_state = Stopped;
+            }
             break;
     }
     delay(200);
@@ -235,6 +293,10 @@ bool tofLeft() {
 
 bool tofRight() {
   return (getTOF(1) < TOF_THRESHOLD);
+}
+
+bool opntInFront() {
+  return (tofLeft() && tofRight());
 }
 
 void initSensor_(uint8_t index) {
