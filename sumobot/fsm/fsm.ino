@@ -22,7 +22,7 @@
 // States
 enum FsmState {Stopped, Fwd, Rev, FwdHigh, RevHigh, Left, Right};
 FsmState cur_state;
-FsmState turn_dir; //Tells which way to turn if nothing else to do
+FsmState search_dir; //Tells which way to turn if nothing else to do
 
 // I^2C stuff
 void init_sensor_(uint8_t index);
@@ -38,8 +38,8 @@ bool edgeFR();
 bool edgeRL();
 bool edgeRR();
 
-bool tofLeft();
-bool tofRight();
+bool tofFront();
+bool tofRear();
 
 void setup() {
     // Change pin numbers in hardware_config.hpp
@@ -58,7 +58,7 @@ void setup() {
     cur_state = Stopped;
 
     // We'll turn left if nothing else to do at first
-    turn_dir = Left;
+    search_dir = Left;
 
     for (uint8_t i = 0; i < num_tof_sensors; i++) {
         pinMode(sensor_pins_[i], OUTPUT);
@@ -106,7 +106,7 @@ void loop() {
             digitalWrite(pins::motorL1, HIGH);
             digitalWrite(pins::motorL2, HIGH);
             // Opponent in front
-            if (tofLeft() && tofRight()) {
+            if (opntInFront()) {
               cur_state = FwdHigh;
             }
             // Edge in front -> reverse 
@@ -119,37 +119,37 @@ void loop() {
             }
             // Edge on left -> turn right
             else if (edgeFL() && edgeRL()) {
-              turn_dir = Right;
+              search_dir = Right;
               cur_state = Right;
             }
             // Edge on right -> turn left
             else if (edgeFR() && edgeRR()) {
-              turn_dir = Left;
+              search_dir = Left;
               cur_state = Left;
             }
             // Edge in front corner -> turn away from edge
             // NEED BETTER RESPONSE HERE
             // Possibly more specific kinds of turns?
             else if (edgeFL()) {
-              turn_dir = Right;
+              search_dir = Right;
               cur_state = Right;
             }
             else if (edgeFR()) {
-              turn_dir = Left;
+              search_dir = Left;
               cur_state = Left;
             }
             // Edge in rear corner -> turn away from edge
             // Probably fine in most cases, but test
             else if (edgeRL()) {
-              turn_dir = Right;
+              search_dir = Right;
               cur_state = Right;
             }
             else if (edgeRR()) {
-              turn_dir = Left;
+              search_dir = Left;
               cur_state = Left;
             }
             else {
-              cur_state = turn_dir;
+              cur_state = search_dir;
             }
             // What else?
             break;
@@ -192,11 +192,11 @@ void loop() {
             }
             // If driving parallel to edge, turn away from it
             else if (edgeFL() && edgeRL()) {
-              turn_dir = Right;
+              search_dir = Right;
               cur_state = Right;
             }
             else if (edgeFR() && edgeRR()) {
-              turn_dir = Left;
+              search_dir = Left;
               cur_state = Left;
             }
             // Fix this case
@@ -241,7 +241,7 @@ void loop() {
               cur_state = FwdHigh;
             }
             else if (edgeFL() || edgeRL()) {
-              turn_dir = Right;
+              search_dir = Right;
               cur_state = Stopped;
             }
             break;
@@ -257,7 +257,7 @@ void loop() {
               cur_state = FwdHigh;
             }
             else if (edgeFR() || edgeRR()) {
-              turn_dir = Left;
+              search_dir = Left;
               cur_state = Stopped;
             }
             break;
@@ -287,16 +287,20 @@ uint16_t getTOF(int i) {
   return (*sensors_[i]).readRangeSingleMillimeters();
 }
 
-bool tofLeft() {
+bool tofFront() {
   return (getTOF(0) < TOF_THRESHOLD);
 }
 
-bool tofRight() {
+bool tofRear() {
   return (getTOF(1) < TOF_THRESHOLD);
 }
 
 bool opntInFront() {
-  return (tofLeft() && tofRight());
+  return (tofFront());
+}
+
+bool opntInRear() {
+  return (tofRear());
 }
 
 void initSensor_(uint8_t index) {
