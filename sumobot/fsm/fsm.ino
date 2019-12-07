@@ -14,10 +14,10 @@
 // Threshold for whether refl sensor detects a line (placeholder number for now)
 #define REF_THRESHOLD 100
 // Threshold for TOF (also placeholder)
-#define TOF_THRESHOLD 100
+#define TOF_THRESHOLD 1000
 // PWM values for motors
-#define HIGH_PWM 100
-#define LOW_PWM 50
+#define HIGH_PWM 255
+#define LOW_PWM 100
 
 // States
 enum FsmState {Stopped, Fwd, Rev, FwdHigh, RevHigh, Left, Right};
@@ -55,7 +55,7 @@ void setup() {
     pinMode(pins::refRR, INPUT);
 
     // Starting at stopped
-    cur_state = Stopped;
+    cur_state = Fwd;
 
     // We'll turn left if nothing else to do at first
     search_dir = Left;
@@ -167,12 +167,12 @@ void loop() {
             // What else?
             break;
         case Fwd:
-            digitalWrite(pins::motorR1, HIGH);
-            digitalWrite(pins::motorR2, LOW);
-            analogWrite(pins::motorRPWM, LOW_PWM);
-            digitalWrite(pins::motorL1, HIGH);
-            digitalWrite(pins::motorL2, LOW);
-            analogWrite(pins::motorLPWM, LOW_PWM);
+            digitalWrite(pins::motorR1, LOW);
+            digitalWrite(pins::motorR2, HIGH);
+            analogWrite(pins::motorRPWM, HIGH_PWM);
+            digitalWrite(pins::motorL1, LOW);
+            digitalWrite(pins::motorL2, HIGH);
+            analogWrite(pins::motorLPWM, HIGH_PWM);
             // Switching Logic
             if (opntInFront()) {
               cur_state = FwdHigh;
@@ -192,12 +192,12 @@ void loop() {
             }
             break;
         case Rev:
-            digitalWrite(pins::motorR1, LOW);
-            digitalWrite(pins::motorR2, HIGH);
-            analogWrite(pins::motorRPWM, LOW_PWM);
-            digitalWrite(pins::motorL1, LOW);
-            digitalWrite(pins::motorL2, HIGH);
-            analogWrite(pins::motorLPWM, LOW_PWM);
+            digitalWrite(pins::motorR1, HIGH);
+            digitalWrite(pins::motorR2, LOW);
+            analogWrite(pins::motorRPWM, HIGH_PWM);
+            digitalWrite(pins::motorL1, HIGH);
+            digitalWrite(pins::motorL2, LOW);
+            analogWrite(pins::motorLPWM, HIGH_PWM);
             // Switching Logic
             if (opntInFront()) {
               cur_state = FwdHigh;
@@ -224,23 +224,23 @@ void loop() {
             }
             break;
         case FwdHigh:
-            digitalWrite(pins::motorR1, HIGH);
-            digitalWrite(pins::motorR2, LOW);
-            analogWrite(pins::motorRPWM, HIGH_PWM);
-            digitalWrite(pins::motorL1, HIGH);
-            digitalWrite(pins::motorL2, LOW);
-            analogWrite(pins::motorLPWM, HIGH_PWM);
-            // Switching Logic
-            if (!opntInFront()) {
-              cur_state = Fwd;
-            }
-            break;
-        case RevHigh:
             digitalWrite(pins::motorR1, LOW);
             digitalWrite(pins::motorR2, HIGH);
             analogWrite(pins::motorRPWM, HIGH_PWM);
             digitalWrite(pins::motorL1, LOW);
             digitalWrite(pins::motorL2, HIGH);
+            analogWrite(pins::motorLPWM, HIGH_PWM);
+            // Switching Logic
+            if (!opntInFront()) {
+              cur_state = search_dir;
+            }
+            break;
+        case RevHigh:
+            digitalWrite(pins::motorR1, HIGH);
+            digitalWrite(pins::motorR2, LOW);
+            analogWrite(pins::motorRPWM, HIGH_PWM);
+            digitalWrite(pins::motorL1, HIGH);
+            digitalWrite(pins::motorL2, LOW);
             analogWrite(pins::motorLPWM, HIGH_PWM);
             // Switching Logic
             // Is this criterion for switching out too strict?
@@ -249,11 +249,11 @@ void loop() {
             }
             break;
         case Left:
-            digitalWrite(pins::motorR1, HIGH);
-            digitalWrite(pins::motorR2, LOW);
+            digitalWrite(pins::motorR1, LOW);
+            digitalWrite(pins::motorR2, HIGH);
             analogWrite(pins::motorRPWM, LOW_PWM);
-            digitalWrite(pins::motorL1, LOW);
-            digitalWrite(pins::motorL2, HIGH);
+            digitalWrite(pins::motorL1, HIGH);
+            digitalWrite(pins::motorL2, LOW);
             analogWrite(pins::motorLPWM, LOW_PWM);
             // Switching Logic
             if (opntInFront()) {
@@ -265,11 +265,11 @@ void loop() {
             }
             break;
         case Right:
-            digitalWrite(pins::motorR1, LOW);
-            digitalWrite(pins::motorR2, HIGH);
+            digitalWrite(pins::motorR1, HIGH);
+            digitalWrite(pins::motorR2, LOW);
             analogWrite(pins::motorRPWM, LOW_PWM);
-            digitalWrite(pins::motorL1, HIGH);
-            digitalWrite(pins::motorL2, LOW);
+            digitalWrite(pins::motorL1, LOW);
+            digitalWrite(pins::motorL2, HIGH);
             analogWrite(pins::motorLPWM, LOW_PWM);
             // Switching Logic
             if (opntInFront()) {
