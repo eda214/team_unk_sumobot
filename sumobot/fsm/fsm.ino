@@ -12,12 +12,12 @@
 
 // Constants
 // Threshold for whether refl sensor detects a line (placeholder number for now)
-#define REF_THRESHOLD 0
+#define REF_THRESHOLD 100
 // Threshold for TOF (also placeholder)
 #define TOF_THRESHOLD 100
 // PWM values for motors
-#define HIGH_PWM 255
-#define LOW_PWM 127
+#define HIGH_PWM 100
+#define LOW_PWM 50
 
 // States
 enum FsmState {Stopped, Fwd, Rev, FwdHigh, RevHigh, Left, Right};
@@ -96,18 +96,18 @@ void setup() {
 void loop() {
     #if DEBUG_ENABLED
         Serial.print("State: ");
-        Serial.println(cur_state);
-        Serial.print("IR Front Left: ");
-        Serial.println(analogRead(pins::refFL));
-        Serial.print("IR Front Right: ");
-        Serial.println(analogRead(pins::refFR));
-        Serial.print("IR Rear Left: ");
-        Serial.println(analogRead(pins::refRL));
-        Serial.print("IR Rear Right: ");
-        Serial.println(analogRead(pins::refRR));
-        Serial.print("TOF Front: ");
-        Serial.println(getTOF(0));
-        Serial.print("TOF Rear: ");
+        Serial.print(cur_state);
+        Serial.print("   IR Front Left: ");
+        Serial.print(analogRead(pins::refFL));
+        Serial.print("   IR Front Right: ");
+        Serial.print(analogRead(pins::refFR));
+        Serial.print("   IR Rear Left: ");
+        Serial.print(analogRead(pins::refRL));
+        Serial.print("   IR Rear Right: ");
+        Serial.print(analogRead(pins::refRR));
+        Serial.print("   TOF Front: ");
+        Serial.print(getTOF(0));
+        Serial.print("   TOF Rear: ");
         Serial.println(getTOF(1));
     #endif
 
